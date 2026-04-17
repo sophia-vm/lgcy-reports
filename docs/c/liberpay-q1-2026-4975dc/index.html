@@ -6,172 +6,379 @@
   <title>LGCY — Liberpay — Q1 2026</title>
   <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #F9FAFB; color: #111827; }
-  header { background: #111827; color: #fff; padding: 32px 40px; }
-  header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
-  header p  { font-size: 13px; color: #9CA3AF; margin-top: 4px; }
-  main { max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
-  section { background: #fff; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,.07); margin-bottom: 32px; overflow: hidden; }
-  .campaign-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 20px 24px; border-bottom: 1px solid #F3F4F6; }
-  .campaign-header h2 { font-size: 17px; font-weight: 700; }
-  .summary-pills { display: flex; gap: 8px; flex-wrap: wrap; }
-  .pill { background: #F3F4F6; border-radius: 20px; padding: 4px 12px; font-size: 13px; font-weight: 600; color: #374151; }
+  :root {
+    --bg: #0D0D0D;
+    --surface: #161616;
+    --surface2: #1E1E1E;
+    --border: #2A2A2A;
+    --text: #F5F5F5;
+    --text-muted: #6B6B6B;
+    --accent: #C8FF00;
+    --accent-dim: rgba(200,255,0,.12);
+  }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  /* ── Header ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+  }
+  .logo {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: var(--text);
+  }
+  .logo span { color: var(--accent); }
+  .updated { font-size: 12px; color: var(--text-muted); }
+
+  /* ── Main ── */
+  main { max-width: 1160px; margin: 0 auto; padding: 40px 24px; }
+
+  /* ── Campaign title ── */
+  .campaign-title { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 24px; }
+
+  /* ── KPI Cards ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 20px 16px;
+  }
+  .kpi-card.accent { border-color: var(--accent); background: var(--accent-dim); }
+  .kpi-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 8px; }
+  .kpi-value { font-size: 28px; font-weight: 800; letter-spacing: -1px; color: var(--text); }
+  .kpi-card.accent .kpi-value { color: var(--accent); }
+
+  /* ── Sidebar layout ── */
+  .layout { display: flex; gap: 24px; align-items: flex-start; }
+  .sidebar {
+    width: 200px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .sidebar-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+  }
+  .sidebar-card h3 { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 12px; }
+  .sidebar-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-bottom: 8px; }
+  .sidebar-row:last-child { margin-bottom: 0; }
+  .sidebar-row .label { color: var(--text-muted); }
+  .sidebar-row .val { font-weight: 600; color: var(--text); }
+  .bar-wrap { margin-top: 4px; background: var(--border); border-radius: 4px; height: 4px; overflow: hidden; }
+  .bar-fill { height: 4px; background: var(--accent); border-radius: 4px; }
+
+  /* ── Table ── */
+  .table-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    flex: 1;
+    min-width: 0;
+  }
   .table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 14px; }
-  thead th { background: #F9FAFB; padding: 10px 16px; text-align: left; font-size: 12px; font-weight: 600; color: #6B7280; text-transform: uppercase; letter-spacing: .4px; border-bottom: 1px solid #F3F4F6; white-space: nowrap; }
-  tbody td { padding: 12px 16px; border-bottom: 1px solid #F9FAFB; vertical-align: middle; white-space: nowrap; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th {
+    background: var(--surface2);
+    padding: 10px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  tbody td {
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+    white-space: nowrap;
+    color: var(--text);
+  }
   tbody tr:last-child td { border-bottom: none; }
-  tbody tr:hover { background: #FAFAFA; }
-  a { color: #6366F1; text-decoration: none; font-weight: 500; }
+  tbody tr:hover { background: var(--surface2); }
+  a { color: var(--accent); text-decoration: none; font-weight: 500; }
   a:hover { text-decoration: underline; }
-  footer { text-align: center; padding: 32px; font-size: 12px; color: #9CA3AF; }
+
+  /* ── Footer ── */
+  footer { text-align: center; padding: 40px 24px; font-size: 12px; color: var(--text-muted); }
+
+  /* ── Mobile ── */
+  @media (max-width: 768px) {
+    header { padding: 0 20px; }
+    main { padding: 24px 16px; }
+    .campaign-title { font-size: 20px; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .layout { flex-direction: column; }
+    .sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; gap: 12px; }
+    .sidebar-card { flex: 1; min-width: 140px; }
+    /* Mobile cards instead of table rows */
+    table, thead, tbody, th, td, tr { display: block; }
+    thead tr { position: absolute; top: -9999px; left: -9999px; }
+    tbody tr {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 12px;
+      padding: 12px 16px;
+      white-space: normal;
+    }
+    tbody td {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border: none;
+      font-size: 13px;
+      white-space: normal;
+    }
+    tbody td::before {
+      content: attr(data-label);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      flex-shrink: 0;
+      margin-right: 12px;
+    }
+    tbody td[style*="text-align:right"] { text-align: left !important; }
+  }
 </style>
 </head>
 <body>
   <header>
-    <h1>LGCY — Relatório de Campanha</h1>
-    <p>Atualizado em 17/04/2026, 18:05:26</p>
+    <div class="logo">LG<span>CY</span></div>
+    <span class="updated">Atualizado em 17/04/2026, 18:38:58</span>
   </header>
   <main>
-    <section>
-      <div class="campaign-header">
-        <h2>Liberpay — Q1 2026</h2>
-        <div class="summary-pills">
-          <span class="pill">10 posts</span>
-          <span class="pill">1.590 views</span>
-          <span class="pill">109 likes</span>
+    <div class="campaign-title">Liberpay — Q1 2026</div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card accent">
+        <div class="kpi-label">Views</div>
+        <div class="kpi-value">1.590</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Likes</div>
+        <div class="kpi-value">109</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Comentários</div>
+        <div class="kpi-value">25</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Shares</div>
+        <div class="kpi-value">0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">ER médio</div>
+        <div class="kpi-value">—</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Posts</div>
+        <div class="kpi-value">10</div>
+      </div>
+    </div>
+
+    <div class="layout">
+      <div class="sidebar">
+        <div class="sidebar-card">
+          <h3>Plataforma</h3>
+          <div class="sidebar-row"><span class="label">Instagram</span><span class="val">7</span></div>
+      <div class="bar-wrap"><div class="bar-fill" style="width:70%"></div></div><div class="sidebar-row"><span class="label">YouTube</span><span class="val">3</span></div>
+      <div class="bar-wrap"><div class="bar-fill" style="width:30%"></div></div>
+        </div>
+        <div class="sidebar-card">
+          <h3>Status</h3>
+          <div class="sidebar-row"><span class="label">Validado</span><span class="val">10</span></div>
         </div>
       </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Creator</th>
-              <th>Plataforma</th>
-              <th>Formato</th>
-              <th>Data</th>
-              <th>Post</th>
-              <th style="text-align:right">Views</th>
-              <th style="text-align:right">Likes</th>
-              <th style="text-align:right">Comentários</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
+      <div class="table-section">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Creator</th>
+                <th>Plataforma</th>
+                <th>Formato</th>
+                <th>Data</th>
+                <th>Topic</th>
+                <th>Post</th>
+                <th style="text-align:right">Views</th>
+                <th style="text-align:right">Likes</th>
+                <th style="text-align:right">Comentários</th>
+                <th style="text-align:right">Shares</th>
+                <th style="text-align:right">ER</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
     <tr>
-      <td>@lucasmoda</td>
-      <td>Instagram</td>
-      <td>Story</td>
-      <td>2026-04-02</td>
-      <td><a href="(link original não disponível — prints em https://ibb.co/Jj5T1G35 e https://ibb.co/ynsczx5x)" target="_blank">Ver post</a></td>
-      <td style="text-align:right">—</td>
-      <td style="text-align:right">—</td>
-      <td style="text-align:right">—</td>
-      <td><span style="background:#10B981;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600">Validado</span></td>
+      <td data-label="Creator">@lucasmoda</td>
+      <td data-label="Plataforma">Instagram</td>
+      <td data-label="Formato">Story</td>
+      <td data-label="Data">2026-04-02</td>
+      <td data-label="Topic">—</td>
+      <td data-label="Post"><a href="(link original não disponível — prints em https://ibb.co/Jj5T1G35 e https://ibb.co/ynsczx5x)" target="_blank">Ver post</a></td>
+      <td data-label="Views" style="text-align:right">—</td>
+      <td data-label="Likes" style="text-align:right">—</td>
+      <td data-label="Comentários" style="text-align:right">—</td>
+      <td data-label="Shares" style="text-align:right">—</td>
+      <td data-label="ER" style="text-align:right">—</td>
+      <td data-label="Status"><span style="background:rgba(16,185,129,.15);color:#10B981;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.3px">Validado</span></td>
     </tr>
     <tr>
-      <td>@victorrivas</td>
-      <td>YouTube</td>
-      <td>Vídeo</td>
-      <td>2026-03-25</td>
-      <td><a href="https://www.youtube.com/watch?v=VtQhzdv_Fo0" target="_blank">Ver post</a></td>
-      <td style="text-align:right">1.032</td>
-      <td style="text-align:right">61</td>
-      <td style="text-align:right">20</td>
-      <td><span style="background:#10B981;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600">Validado</span></td>
+      <td data-label="Creator">@victorrivas</td>
+      <td data-label="Plataforma">YouTube</td>
+      <td data-label="Formato">Vídeo</td>
+      <td data-label="Data">2026-03-25</td>
+      <td data-label="Topic">—</td>
+      <td data-label="Post"><a href="https://www.youtube.com/watch?v=VtQhzdv_Fo0" target="_blank">Ver post</a></td>
+      <td data-label="Views" style="text-align:right">1.032</td>
+      <td data-label="Likes" style="text-align:right">61</td>
+      <td data-label="Comentários" style="text-align:right">20</td>
+      <td data-label="Shares" style="text-align:right">—</td>
+      <td data-label="ER" style="text-align:right">—</td>
+      <td data-label="Status"><span style="background:rgba(16,185,129,.15);color:#10B981;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.3px">Validado</span></td>
     </tr>
     <tr>
-      <td>@jojo</td>
-      <td>Instagram</td>
-      <td>Reels</td>
-      <td>2026-03-31</td>
-      <td><a href="https://www.instagram.com/reel/DWkFgV0jCvc/" target="_blank">Ver post</a></td>
-      <td style="text-align:right">0</td>
-      <td style="text-align:right">0</td>
-      <td style="text-align:right">0</td>
-      <td><span style="background:#10B981;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600">Validado</span></td>
+      <td data-label="Creator">@jojo</td>
+      <td data-label="Plataforma">Instagram</td>
+      <td data-label="Formato">Reels</td>
+      <td data-label="Data">2026-03-31</td>
+      <td data-label="Topic">—</td>
+      <td data-label="Post"><a href="https://www.instagram.com/reel/DWkFgV0jCvc/" target="_blank">Ver post</a></td>
+      <td data-label="Views" style="text-align:right">0</td>
+      <td data-label="Likes" style="text-align:right">0</td>
+      <td data-label="Comentários" style="text-align:right">0</td>
+      <td data-label="Shares" style="text-align:right">—</td>
+      <td data-label="ER" style="text-align:right">—</td>
+      <td data-label="Status"><span style="background:rgba(16,185,129,.15);color:#10B981;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.3px">Validado</span></td>
     </tr>
     <tr>
-      <td>@lucasmoda</td>
-      <td>Instagram</td>
-      <td>Reels</td>
-      <td>2026-03-31</td>
-      <td><a href="https://www.instagram.com/reel/DWjhtrUEaUP/" target="_blank">Ver post</a></td>
-      <td style="text-align:right">0</td>
-      <td style="text-align:right">0</td>
-      <td style="text-align:right">0</td>
-      <td><span style="background:#10B981;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600">Validado</span></td>
+      <td data-label="Creator">@lucasmoda</td>
+      <td data-label="Plataforma">Instagram</td>
+      <td data-label="Formato">Reels</td>
+      <td data-label="Data">2026-03-31</td>
+      <td data-label="Topic">—</td>
+      <td data-label="Post"><a href="https://www.instagram.com/reel/DWjhtrUEaUP/" target="_blank">Ver post</a></td>
+      <td data-label="Views" style="text-align:right">0</td>
+      <td data-label="Likes" style="text-align:right">0</td>
+      <td data-label="Comentários" style="text-align:right">0</td>
+      <td data-label="Shares" style="text-align:right">—</td>
+      <td data-label="ER" style="text-align:right">—</td>
+      <td data-label="Status"><span style="background:rgba(16,185,129,.15);color:#10B981;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.3px">Validado</span></td>
     </tr>
     <tr>
-      <td>@thutski</td>
-      <td>Instagram</td>
-      <td>Post (Carrossel)</td>
-      <td>2026-03-10</td>
-      <td><a href="https://www.instagram.com/thutski/p/DVtAH3rjvWo/" target="_blank">Ver post</a></td>
-      <td style="text-align:right">0</td>
-      <td style="text-align:right">0</td>
-      <td style="text-align:right">0</td>
-      <td><span style="background:#10B981;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600">Validado</span></td>
+      <td data-label="Creator">@thutski</td>
+      <td data-label="Plataforma">Instagram</td>
+      <td data-label="Formato">Post (Carrossel)</td>
+      <td data-label="Data">2026-03-10</td>
+      <td data-label="Topic">—</td>
+      <td data-label="Post"><a href="https://www.instagram.com/thutski/p/DVtAH3rjvWo/" target="_blank">Ver post</a></td>
+      <td data-label="Views" style="text-align:right">0</td>
+      <td data-label="Likes" style="text-align:right">0</td>
+      <td data-label="Comentários" style="text-align:right">0</td>
+      <td data-label="Shares" style="text-align:right">—</td>
+      <td data-label="ER" style="text-align:right">—</td>
+      <td data-label="Status"><span style="background:rgba(16,185,129,.15);color:#10B981;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.3px">Validado</span></td>
     </tr>
     <tr>
-      <td>@jonatarribas</td>
-      <td>Instagram</td>
-      <td>Reels</td>
-      <td>2026-03-06</td>
-      <td><a href="https://www.instagram.com/reel/DVcFz1HDcka/" target="_blank">Ver post</a></td>
-      <td style="text-align:right">0</td>
-      <td style="text-align:right">0</td>
-      <td style="text-align:right">0</td>
-      <td><span style="background:#10B981;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600">Validado</span></td>
+      <td data-label="Creator">@jonatarribas</td>
+      <td data-label="Plataforma">Instagram</td>
+      <td data-label="Formato">Reels</td>
+      <td data-label="Data">2026-03-06</td>
+      <td data-label="Topic">—</td>
+      <td data-label="Post"><a href="https://www.instagram.com/reel/DVcFz1HDcka/" target="_blank">Ver post</a></td>
+      <td data-label="Views" style="text-align:right">0</td>
+      <td data-label="Likes" style="text-align:right">0</td>
+      <td data-label="Comentários" style="text-align:right">0</td>
+      <td data-label="Shares" style="text-align:right">—</td>
+      <td data-label="ER" style="text-align:right">—</td>
+      <td data-label="Status"><span style="background:rgba(16,185,129,.15);color:#10B981;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.3px">Validado</span></td>
     </tr>
     <tr>
-      <td>@bitnoob</td>
-      <td>YouTube</td>
-      <td>Vídeo</td>
-      <td>2026-02-27</td>
-      <td><a href="https://www.youtube.com/watch?v=aZnYGFM886o" target="_blank">Ver post</a></td>
-      <td style="text-align:right">334</td>
-      <td style="text-align:right">19</td>
-      <td style="text-align:right">5</td>
-      <td><span style="background:#10B981;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600">Validado</span></td>
+      <td data-label="Creator">@bitnoob</td>
+      <td data-label="Plataforma">YouTube</td>
+      <td data-label="Formato">Vídeo</td>
+      <td data-label="Data">2026-02-27</td>
+      <td data-label="Topic">—</td>
+      <td data-label="Post"><a href="https://www.youtube.com/watch?v=aZnYGFM886o" target="_blank">Ver post</a></td>
+      <td data-label="Views" style="text-align:right">334</td>
+      <td data-label="Likes" style="text-align:right">19</td>
+      <td data-label="Comentários" style="text-align:right">5</td>
+      <td data-label="Shares" style="text-align:right">—</td>
+      <td data-label="ER" style="text-align:right">—</td>
+      <td data-label="Status"><span style="background:rgba(16,185,129,.15);color:#10B981;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.3px">Validado</span></td>
     </tr>
     <tr>
-      <td>@bitnoob</td>
-      <td>YouTube</td>
-      <td>Vídeo</td>
-      <td>2026-03-13</td>
-      <td><a href="https://youtu.be/nPkjorfSwRU?si=TjJjMTt4REBSGHTc&t=394" target="_blank">Ver post</a></td>
-      <td style="text-align:right">224</td>
-      <td style="text-align:right">29</td>
-      <td style="text-align:right">0</td>
-      <td><span style="background:#10B981;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600">Validado</span></td>
+      <td data-label="Creator">@bitnoob</td>
+      <td data-label="Plataforma">YouTube</td>
+      <td data-label="Formato">Vídeo</td>
+      <td data-label="Data">2026-03-13</td>
+      <td data-label="Topic">—</td>
+      <td data-label="Post"><a href="https://youtu.be/nPkjorfSwRU?si=TjJjMTt4REBSGHTc&t=394" target="_blank">Ver post</a></td>
+      <td data-label="Views" style="text-align:right">224</td>
+      <td data-label="Likes" style="text-align:right">29</td>
+      <td data-label="Comentários" style="text-align:right">0</td>
+      <td data-label="Shares" style="text-align:right">—</td>
+      <td data-label="ER" style="text-align:right">—</td>
+      <td data-label="Status"><span style="background:rgba(16,185,129,.15);color:#10B981;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.3px">Validado</span></td>
     </tr>
     <tr>
-      <td>@thutski</td>
-      <td>Instagram</td>
-      <td>Reels</td>
-      <td>2026-02-25</td>
-      <td><a href="https://www.instagram.com/reel/DVQrYd5AXFz/" target="_blank">Ver post</a></td>
-      <td style="text-align:right">0</td>
-      <td style="text-align:right">0</td>
-      <td style="text-align:right">0</td>
-      <td><span style="background:#10B981;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600">Validado</span></td>
+      <td data-label="Creator">@thutski</td>
+      <td data-label="Plataforma">Instagram</td>
+      <td data-label="Formato">Reels</td>
+      <td data-label="Data">2026-02-25</td>
+      <td data-label="Topic">—</td>
+      <td data-label="Post"><a href="https://www.instagram.com/reel/DVQrYd5AXFz/" target="_blank">Ver post</a></td>
+      <td data-label="Views" style="text-align:right">0</td>
+      <td data-label="Likes" style="text-align:right">0</td>
+      <td data-label="Comentários" style="text-align:right">0</td>
+      <td data-label="Shares" style="text-align:right">—</td>
+      <td data-label="ER" style="text-align:right">—</td>
+      <td data-label="Status"><span style="background:rgba(16,185,129,.15);color:#10B981;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.3px">Validado</span></td>
     </tr>
     <tr>
-      <td>@jonatarribas</td>
-      <td>Instagram</td>
-      <td>Reels</td>
-      <td>2026-02-23</td>
-      <td><a href="https://www.instagram.com/p/DVHhbEajZNV/" target="_blank">Ver post</a></td>
-      <td style="text-align:right">0</td>
-      <td style="text-align:right">0</td>
-      <td style="text-align:right">0</td>
-      <td><span style="background:#10B981;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600">Validado</span></td>
+      <td data-label="Creator">@jonatarribas</td>
+      <td data-label="Plataforma">Instagram</td>
+      <td data-label="Formato">Reels</td>
+      <td data-label="Data">2026-02-23</td>
+      <td data-label="Topic">—</td>
+      <td data-label="Post"><a href="https://www.instagram.com/p/DVHhbEajZNV/" target="_blank">Ver post</a></td>
+      <td data-label="Views" style="text-align:right">0</td>
+      <td data-label="Likes" style="text-align:right">0</td>
+      <td data-label="Comentários" style="text-align:right">0</td>
+      <td data-label="Shares" style="text-align:right">—</td>
+      <td data-label="ER" style="text-align:right">—</td>
+      <td data-label="Status"><span style="background:rgba(16,185,129,.15);color:#10B981;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.3px">Validado</span></td>
     </tr></tbody>
-        </table>
+          </table>
+        </div>
       </div>
-    </section>
+    </div>
   </main>
-  <footer>LGCY</footer>
+  <footer>LGCY Agency</footer>
 </body>
 </html>
