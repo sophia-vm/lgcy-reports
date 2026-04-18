@@ -95,6 +95,15 @@
   .metrics-card .btn-save { background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-family: 'Arimo', sans-serif; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; padding: 8px 20px; border-radius: 3px; cursor: pointer; }
   .metrics-card .btn-save:hover { border-color: #444; }
   .metrics-card .btn-save.success { border-color: var(--green); color: var(--green); }
+
+  .campanha-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
+  .campanha-row { display: flex; align-items: center; justify-content: space-between; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 12px 16px; }
+  .campanha-row .c-title { font-size: 13px; font-weight: 600; }
+  .campanha-row .c-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .campanha-row .c-slug { font-size: 10px; color: var(--muted); font-family: monospace; margin-top: 3px; }
+  .btn-fechar { background: none; border: 1px solid var(--border); color: var(--muted); font-family: 'Arimo', sans-serif; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; padding: 6px 16px; border-radius: 3px; cursor: pointer; white-space: nowrap; }
+  .btn-fechar:hover { border-color: var(--red); color: var(--red); }
+  .camp-divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
   </style>
 </head>
 <body>
@@ -111,6 +120,7 @@
 <nav id="main-nav" style="display:none">
   <button class="active" onclick="showTab('novo')">Novo deliverable</button>
   <button onclick="showTab('links')">Links</button>
+  <button onclick="showTab('campanhas')">Campanhas</button>
   <button onclick="showTab('nfs')">NFs</button>
   <button onclick="showTab('metricas')">Métricas</button>
   <button onclick="showTab('digest')">Digest</button>
@@ -190,6 +200,30 @@
         </div>
       </div>
       <button class="btn btn-primary" type="submit" id="btn-criar">Criar issue</button>
+    </form>
+  </div>
+
+  <!-- TAB: Campanhas -->
+  <div class="tab" id="tab-campanhas">
+    <h2>Campanhas</h2>
+
+    <div class="campanha-list" id="list-campanhas"><p class="loading">Carregando...</p></div>
+
+    <hr class="camp-divider">
+
+    <h2>Nova campanha</h2>
+    <form id="form-campanha" onsubmit="criarCampanha(event)">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Marca *</label>
+          <input id="c-marca" placeholder="Ex: Kraken" required>
+        </div>
+        <div class="form-group">
+          <label>Período *</label>
+          <input id="c-periodo" placeholder="Ex: Maio 2026" required>
+        </div>
+      </div>
+      <button class="btn btn-primary" type="submit" id="btn-campanha">Criar campanha</button>
     </form>
   </div>
 
@@ -273,6 +307,7 @@ function showTab(name) {
   document.getElementById(`tab-${name}`).classList.add('active');
   event.target.classList.add('active');
   if (name === 'links') loadLinks();
+  if (name === 'campanhas') loadCampanhas();
   if (name === 'nfs') loadNFs();
   if (name === 'metricas') loadMetricas();
   if (name === 'digest') loadDigest();
@@ -293,6 +328,65 @@ async function loadDashboards() {
       return `<a class="dash-chip" href="${url}" target="_blank"><span class="chip-icon">↗</span>${m.title}</a>`;
     }).join('');
   } catch(e) { chips.innerHTML = '<span class="dash-chip-none">Erro ao carregar.</span>'; }
+}
+
+// ── Campanhas ─────────────────────────────────────────────────────────────────
+function gerarSlug(marca, periodo) {
+  const base = (marca + '-' + periodo).toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const suffix = Math.random().toString(36).slice(2, 8);
+  return `${base}-${suffix}`;
+}
+
+async function loadCampanhas() {
+  const el = document.getElementById('list-campanhas');
+  el.innerHTML = '<p class="loading">Carregando...</p>';
+  try {
+    const ms = await ghFetch(`/repos/${REPO}/milestones?state=open&per_page=50`);
+    if (!ms.length) { el.innerHTML = '<p class="empty">Nenhuma campanha ativa.</p>'; return; }
+    el.innerHTML = ms.map(m => {
+      const slug = (m.description || '').match(/slug:([a-z0-9\-]+)/)?.[1];
+      const reportUrl = slug ? `https://lgcyagcy.github.io/lgcy-reports/c/${slug}/` : null;
+      return `<div class="campanha-row">
+        <div>
+          <div class="c-title">${m.title}</div>
+          <div class="c-slug">${slug ? `slug: ${slug}` : '<span style="color:var(--amber)">sem slug — report não disponível</span>'}</div>
+          ${reportUrl ? `<div class="c-meta"><a href="${reportUrl}" target="_blank" style="color:var(--muted);font-size:11px">↗ ver report</a></div>` : ''}
+        </div>
+        <button class="btn-fechar" onclick="fecharCampanha(${m.number}, '${m.title}')">Encerrar</button>
+      </div>`;
+    }).join('');
+  } catch(err) { el.innerHTML = `<p class="empty">Erro: ${err.message}</p>`; }
+}
+
+async function criarCampanha(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btn-campanha');
+  const marca = document.getElementById('c-marca').value.trim();
+  const periodo = document.getElementById('c-periodo').value.trim();
+  const title = `${marca} — ${periodo}`;
+  const slug = gerarSlug(marca, periodo);
+  btn.disabled = true; btn.textContent = 'Criando...';
+  try {
+    await ghFetch(`/repos/${REPO}/milestones`, {
+      method: 'POST',
+      body: JSON.stringify({ title, description: `slug:${slug}` })
+    });
+    toast(`Campanha "${title}" criada!`);
+    document.getElementById('form-campanha').reset();
+    await Promise.all([loadMilestones(), loadCampanhas(), loadDashboards()]);
+  } catch(err) { toast(`Erro: ${err.message}`, 'err'); }
+  btn.disabled = false; btn.textContent = 'Criar campanha';
+}
+
+async function fecharCampanha(num, title) {
+  if (!confirm(`Encerrar campanha "${title}"?\n\nIsso fecha o milestone e ela sai do board ativo.`)) return;
+  try {
+    await ghFetch(`/repos/${REPO}/milestones/${num}`, { method: 'PATCH', body: JSON.stringify({ state: 'closed' }) });
+    toast(`Campanha "${title}" encerrada.`);
+    await Promise.all([loadMilestones(), loadCampanhas(), loadDashboards()]);
+  } catch(err) { toast(`Erro: ${err.message}`, 'err'); }
 }
 
 // ── Milestones ────────────────────────────────────────────────────────────────
