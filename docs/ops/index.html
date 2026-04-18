@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LGCY Ops</title>
+  <style>
+  @import url('https://fonts.googleapis.com/css2?family=Anton&family=Arimo:wght@400;600&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0A0A0A; --surface: #111; --surface2: #1A1A1A; --border: #222;
+    --text: #EBEBEB; --muted: #555; --accent: #fff;
+    --ig: #C77DFF; --yt: #FF4D4D; --tt: #4DD9D9; --tw: #1DA1F2;
+    --green: #4CAF50; --amber: #FFC107; --red: #F44336;
+  }
+  body { font-family: 'Arimo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  header { border-bottom: 1px solid var(--border); padding: 0 32px; display: flex; align-items: center; justify-content: space-between; height: 52px; }
+  .logo { font-family: 'Anton', sans-serif; font-size: 20px; letter-spacing: 4px; text-transform: uppercase; }
+  .logo span { color: var(--muted); font-size: 12px; font-family: 'Arimo', sans-serif; letter-spacing: 1px; margin-left: 8px; }
+  #auth-status { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 10px; }
+  #auth-status button { font-size: 11px; padding: 4px 12px; border: 1px solid var(--border); background: var(--surface2); color: var(--text); cursor: pointer; border-radius: 3px; }
+  #auth-status button:hover { border-color: var(--accent); }
+
+  nav { display: flex; border-bottom: 1px solid var(--border); padding: 0 32px; }
+  nav button { background: none; border: none; color: var(--muted); font-family: 'Arimo', sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .6px; padding: 14px 16px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  nav button.active { color: var(--text); border-bottom-color: var(--accent); }
+  nav button:hover:not(.active) { color: var(--text); }
+
+  main { padding: 28px 32px; max-width: 800px; }
+  .tab { display: none; }
+  .tab.active { display: block; }
+
+  h2 { font-family: 'Anton', sans-serif; font-size: 18px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
+  input, select, textarea { background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-family: 'Arimo', sans-serif; font-size: 13px; padding: 8px 12px; border-radius: 3px; width: 100%; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: #444; }
+  select option { background: var(--surface2); }
+  textarea { resize: vertical; min-height: 80px; }
+
+  .btn { font-family: 'Arimo', sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .8px; padding: 10px 24px; border-radius: 3px; cursor: pointer; border: 1px solid; margin-top: 20px; }
+  .btn-primary { background: var(--accent); color: #000; border-color: var(--accent); }
+  .btn-primary:hover { background: #ddd; }
+  .btn-primary:disabled { background: var(--surface2); color: var(--muted); border-color: var(--border); cursor: not-allowed; }
+
+  .issue-list { display: flex; flex-direction: column; gap: 12px; }
+  .issue-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; }
+  .issue-card .title { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+  .issue-card .meta { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+  .issue-card .input-row { display: flex; gap: 8px; }
+  .issue-card .input-row input { flex: 1; }
+  .issue-card .input-row button { flex-shrink: 0; background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; padding: 8px 16px; border-radius: 3px; cursor: pointer; white-space: nowrap; }
+  .issue-card .input-row button:hover { border-color: #444; }
+  .issue-card .input-row button.success { border-color: var(--green); color: var(--green); }
+
+  .plat-ig { color: var(--ig); } .plat-yt { color: var(--yt); } .plat-tt { color: var(--tt); } .plat-tw { color: var(--tw); }
+
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-size: 12px; padding: 10px 18px; border-radius: 4px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 100; }
+  .toast.show { opacity: 1; }
+  .toast.ok { border-color: var(--green); color: var(--green); }
+  .toast.err { border-color: var(--red); color: var(--red); }
+
+  .digest-section { margin-bottom: 24px; }
+  .digest-section h3 { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin-bottom: 10px; }
+  .digest-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; margin-bottom: 6px; font-size: 12px; }
+  .digest-item a { color: var(--text); text-decoration: none; }
+  .digest-item a:hover { text-decoration: underline; }
+
+  .empty { color: var(--muted); font-size: 13px; padding: 20px 0; }
+  .loading { color: var(--muted); font-size: 13px; }
+
+  #login-overlay { display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; gap: 16px; text-align: center; }
+  #login-overlay h2 { color: var(--muted); }
+  #login-overlay p { font-size: 13px; color: var(--muted); max-width: 360px; }
+  #login-overlay button { font-size: 13px; font-weight: 600; padding: 12px 28px; background: var(--accent); color: #000; border: none; border-radius: 3px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">LGCY <span>ops</span></div>
+  <div id="auth-status">
+    <span id="auth-user"></span>
+    <button id="btn-logout" style="display:none" onclick="logout()">Sair</button>
+    <button id="btn-login" onclick="login()">Entrar com GitHub</button>
+  </div>
+</header>
+
+<nav id="main-nav" style="display:none">
+  <button class="active" onclick="showTab('novo')">Novo deliverable</button>
+  <button onclick="showTab('links')">Links</button>
+  <button onclick="showTab('nfs')">NFs</button>
+  <button onclick="showTab('digest')">Digest</button>
+</nav>
+
+<main>
+  <div id="login-overlay">
+    <h2>Painel operacional interno</h2>
+    <p>Acesso restrito à equipe LGCY. Entre com sua conta GitHub para continuar.</p>
+    <button onclick="login()">Entrar com GitHub</button>
+  </div>
+
+  <!-- TAB: Novo deliverable -->
+  <div class="tab" id="tab-novo">
+    <h2>Novo deliverable</h2>
+    <form id="form-novo" onsubmit="criarDeliverable(event)">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Creator *</label>
+          <input id="f-creator" placeholder="@creator" required>
+        </div>
+        <div class="form-group">
+          <label>Plataforma *</label>
+          <select id="f-plataforma" required>
+            <option value="">Selecionar...</option>
+            <option>Instagram</option>
+            <option>TikTok</option>
+            <option>YouTube</option>
+            <option>Twitter/X</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Formato *</label>
+          <select id="f-formato" required>
+            <option value="">Selecionar...</option>
+            <option>Reels</option>
+            <option>Post</option>
+            <option>Story</option>
+            <option>Vídeo</option>
+            <option>Texto</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Tipo de post *</label>
+          <select id="f-tipo" required>
+            <option value="">Selecionar...</option>
+            <option>Dedicated</option>
+            <option>Insert</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Campanha *</label>
+          <select id="f-campanha" required>
+            <option value="">Selecionar...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Prazo de publicação *</label>
+          <input id="f-prazo" type="date" required>
+        </div>
+        <div class="form-group">
+          <label>Valor (R$) *</label>
+          <input id="f-valor" placeholder="R$ 0,00" required>
+        </div>
+        <div class="form-group">
+          <label>Link do post</label>
+          <input id="f-link" placeholder="https://...">
+        </div>
+        <div class="form-group full">
+          <label>Observações</label>
+          <textarea id="f-obs" placeholder="Briefing, referências, restrições..."></textarea>
+        </div>
+      </div>
+      <button class="btn btn-primary" type="submit" id="btn-criar">Criar issue</button>
+    </form>
+  </div>
+
+  <!-- TAB: Links -->
+  <div class="tab" id="tab-links">
+    <h2>Links de posts</h2>
+    <div id="list-links" class="issue-list"><p class="loading">Carregando...</p></div>
+  </div>
+
+  <!-- TAB: NFs -->
+  <div class="tab" id="tab-nfs">
+    <h2>Notas fiscais</h2>
+    <div id="list-nfs" class="issue-list"><p class="loading">Carregando...</p></div>
+  </div>
+
+  <!-- TAB: Digest -->
+  <div class="tab" id="tab-digest">
+    <h2>Digest do dia</h2>
+    <div id="digest-content"><p class="loading">Carregando...</p></div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const REPO = 'LgcyAgcy/lgcy-ops';
+
+const API  = 'https://api.github.com';
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+function getToken() { return localStorage.getItem('lgcy_pat'); }
+
+async function login() {
+  const token = prompt('Cole seu Personal Access Token do GitHub (ou pressione OK para usar o token padrão):');
+  if (token && token.trim().startsWith('ghp_')) {
+    localStorage.setItem('lgcy_pat', token.trim());
+  }
+  await initApp();
+}
+
+function logout() {
+  localStorage.removeItem('lgcy_pat');
+  location.reload();
+}
+
+async function ghFetch(path, opts = {}) {
+  const res = await fetch(`${API}${path}`, {
+    ...opts,
+    headers: {
+      'Authorization': `token ${getToken()}`,
+      'Accept': 'application/vnd.github+json',
+      'Content-Type': 'application/json',
+      ...(opts.headers || {})
+    }
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || res.statusText);
+  }
+  return res.status === 204 ? null : res.json();
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function toast(msg, type = 'ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast show ${type}`;
+  setTimeout(() => el.className = 'toast', 3000);
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+function showTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(`tab-${name}`).classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'links') loadLinks();
+  if (name === 'nfs') loadNFs();
+  if (name === 'digest') loadDigest();
+}
+
+// ── Milestones ────────────────────────────────────────────────────────────────
+async function loadMilestones() {
+  const ms = await ghFetch(`/repos/${REPO}/milestones?state=open&per_page=50`);
+  const sel = document.getElementById('f-campanha');
+  sel.innerHTML = '<option value="">Selecionar...</option>';
+  ms.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m.number;
+    opt.textContent = m.title;
+    sel.appendChild(opt);
+  });
+}
+
+// ── Criar deliverable ─────────────────────────────────────────────────────────
+function platLabel(p) {
+  const map = { instagram: 'instagram', tiktok: 'tiktok', youtube: 'youtube', 'twitter/x': 'twitter' };
+  return map[p.toLowerCase()] || p.toLowerCase();
+}
+
+function formatLabel(f) {
+  const map = { reels: 'reels', post: 'post', story: 'story', vídeo: 'video', texto: 'post' };
+  return map[f.toLowerCase()] || f.toLowerCase();
+}
+
+async function criarDeliverable(e) {
+  e.preventDefault();
+  const btn = document.getElementById('btn-criar');
+  btn.disabled = true;
+  btn.textContent = 'Criando...';
+
+  const creator   = document.getElementById('f-creator').value.trim();
+  const plat      = document.getElementById('f-plataforma').value;
+  const formato   = document.getElementById('f-formato').value;
+  const tipo      = document.getElementById('f-tipo').value;
+  const campanha  = document.getElementById('f-campanha');
+  const prazo     = document.getElementById('f-prazo').value;
+  const valor     = document.getElementById('f-valor').value.trim();
+  const link      = document.getElementById('f-link').value.trim();
+  const obs       = document.getElementById('f-obs').value.trim();
+  const milestoneNum = parseInt(campanha.value);
+  const campanhaTitle = campanha.options[campanha.selectedIndex].text;
+
+  const body = `### Creator\n\n${creator}\n\n### Plataforma\n\n${plat}\n\n### Formato\n\n${formato}\n\n### Campanha (Milestone)\n\n${campanhaTitle}\n\n### Prazo de publicação\n\n${prazo}\n\n### Valor (R$)\n\n${valor}\n\n### Link do post\n\n${link || '_No response_'}\n\n### Link da NF\n\n_No response_\n\n### Observações\n\n${obs || '_No response_'}`;
+
+  const labels = [platLabel(plat), formatLabel(formato)];
+
+  try {
+    const issue = await ghFetch(`/repos/${REPO}/issues`, {
+      method: 'POST',
+      body: JSON.stringify({
+        title: `${creator} — ${formato} (${tipo}) — ${campanhaTitle}`,
+        body,
+        milestone: milestoneNum,
+        labels
+      })
+    });
+
+    // Se tem link, adiciona label link-recebido
+    if (link) {
+      await ghFetch(`/repos/${REPO}/issues/${issue.number}/labels`, {
+        method: 'POST',
+        body: JSON.stringify({ labels: ['link-recebido'] })
+      });
+    }
+
+    toast(`Issue #${issue.number} criada!`);
+    document.getElementById('form-novo').reset();
+  } catch(err) {
+    toast(`Erro: ${err.message}`, 'err');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Criar issue';
+}
+
+// ── Links ─────────────────────────────────────────────────────────────────────
+async function loadLinks() {
+  const el = document.getElementById('list-links');
+  el.innerHTML = '<p class="loading">Carregando...</p>';
+  try {
+    const issues = await ghFetch(`/repos/${REPO}/issues?state=open&per_page=100`);
+    const sem = issues.filter(i => {
+      if (i.title.startsWith('[DIGEST]')) return false;
+      const link = (i.body || '').match(/###\s*Link do post\s*\n+([^\n]+)/);
+      const val = link ? link[1].trim() : '';
+      return !val || val === '_No response_';
+    });
+    if (!sem.length) { el.innerHTML = '<p class="empty">Nenhuma issue sem link de post.</p>'; return; }
+    el.innerHTML = sem.map(i => `
+      <div class="issue-card">
+        <div class="title">#${i.number} — ${i.title}</div>
+        <div class="meta">${platSpan(i)} · ${milestone(i)}</div>
+        <div class="input-row">
+          <input id="link-${i.number}" placeholder="https://..." onkeydown="if(event.key==='Enter'){salvarLink(${i.number})}">
+          <button onclick="salvarLink(${i.number})" id="btn-link-${i.number}">Salvar link</button>
+        </div>
+      </div>`).join('');
+  } catch(err) { el.innerHTML = `<p class="empty">Erro: ${err.message}</p>`; }
+}
+
+async function salvarLink(num) {
+  const input = document.getElementById(`link-${num}`);
+  const url = input.value.trim();
+  if (!url) return;
+  const btn = document.getElementById(`btn-link-${num}`);
+  btn.textContent = 'Salvando...';
+  try {
+    const issue = await ghFetch(`/repos/${REPO}/issues/${num}`);
+    const newBody = (issue.body || '').replace(
+      /(###\s*Link do post\s*\n+)([^\n]+)/,
+      `$1${url}`
+    );
+    await ghFetch(`/repos/${REPO}/issues/${num}`, { method: 'PATCH', body: JSON.stringify({ body: newBody }) });
+    await ghFetch(`/repos/${REPO}/issues/${num}/labels`, { method: 'POST', body: JSON.stringify({ labels: ['link-recebido'] }) });
+    btn.textContent = '✓ Salvo';
+    btn.className = 'success';
+    toast(`Link salvo na issue #${num} — coleta disparada`);
+  } catch(err) { toast(`Erro: ${err.message}`, 'err'); btn.textContent = 'Salvar link'; }
+}
+
+// ── NFs ───────────────────────────────────────────────────────────────────────
+async function loadNFs() {
+  const el = document.getElementById('list-nfs');
+  el.innerHTML = '<p class="loading">Carregando...</p>';
+  try {
+    const issues = await ghFetch(`/repos/${REPO}/issues?state=open&labels=aguardando-nf&per_page=100`);
+    if (!issues.length) { el.innerHTML = '<p class="empty">Nenhuma NF pendente.</p>'; return; }
+    el.innerHTML = issues.map(i => `
+      <div class="issue-card">
+        <div class="title">#${i.number} — ${i.title}</div>
+        <div class="meta">${platSpan(i)} · ${milestone(i)}</div>
+        <div class="input-row">
+          <input id="nf-${i.number}" placeholder="https://drive.google.com/..." onkeydown="if(event.key==='Enter'){salvarNF(${i.number})}">
+          <button onclick="salvarNF(${i.number})" id="btn-nf-${i.number}">Salvar NF</button>
+        </div>
+      </div>`).join('');
+  } catch(err) { el.innerHTML = `<p class="empty">Erro: ${err.message}</p>`; }
+}
+
+async function salvarNF(num) {
+  const input = document.getElementById(`nf-${num}`);
+  const url = input.value.trim();
+  if (!url) return;
+  const btn = document.getElementById(`btn-nf-${num}`);
+  btn.textContent = 'Salvando...';
+  try {
+    const issue = await ghFetch(`/repos/${REPO}/issues/${num}`);
+    const newBody = (issue.body || '').replace(
+      /(###\s*Link da NF\s*\n+)([^\n]+)/,
+      `$1${url}`
+    );
+    await ghFetch(`/repos/${REPO}/issues/${num}`, { method: 'PATCH', body: JSON.stringify({ body: newBody }) });
+    await ghFetch(`/repos/${REPO}/issues/${num}/labels/aguardando-nf`, { method: 'DELETE' }).catch(() => {});
+    btn.textContent = '✓ Salvo';
+    btn.className = 'success';
+    toast(`NF salva na issue #${num}`);
+  } catch(err) { toast(`Erro: ${err.message}`, 'err'); btn.textContent = 'Salvar NF'; }
+}
+
+// ── Digest ────────────────────────────────────────────────────────────────────
+async function loadDigest() {
+  const el = document.getElementById('digest-content');
+  el.innerHTML = '<p class="loading">Carregando...</p>';
+  try {
+    const issues = await ghFetch(`/repos/${REPO}/issues?state=open&per_page=100`);
+    const today = new Date().toISOString().split('T')[0];
+    const deliverables = issues.filter(i => !i.title.startsWith('[DIGEST]') && !i.labels.some(l => l.name === 'pago'));
+
+    const semLink = deliverables.filter(i => {
+      const prazo = (i.body || '').match(/###\s*Prazo de publicação\s*\n+([0-9]{4}-[0-9]{2}-[0-9]{2})/)?.[1];
+      const link = (i.body || '').match(/###\s*Link do post\s*\n+([^\n]+)/)?.[1]?.trim();
+      return prazo && prazo < today && (!link || link === '_No response_');
+    });
+
+    const manuais = deliverables.filter(i => i.labels.some(l => l.name === 'metricas-manuais'));
+    const nfPend  = deliverables.filter(i => i.labels.some(l => l.name === 'aguardando-nf'));
+
+    let html = '';
+    if (semLink.length) html += section('🔴 Posts sem link após prazo', semLink);
+    if (manuais.length) html += section('🟠 Métricas manuais necessárias', manuais);
+    if (nfPend.length)  html += section('🔵 NFs pendentes', nfPend);
+    if (!html) html = '<p class="empty">Nenhuma pendência hoje.</p>';
+    el.innerHTML = html;
+  } catch(err) { el.innerHTML = `<p class="empty">Erro: ${err.message}</p>`; }
+}
+
+function section(title, items) {
+  return `<div class="digest-section">
+    <h3>${title} (${items.length})</h3>
+    ${items.map(i => `<div class="digest-item">
+      <a href="${i.html_url}" target="_blank">#${i.number} — ${i.title}</a>
+      <span style="color:var(--muted);font-size:11px">${milestone(i)}</span>
+    </div>`).join('')}
+  </div>`;
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function platSpan(issue) {
+  const labels = issue.labels.map(l => l.name);
+  if (labels.includes('instagram')) return '<span class="plat-ig">Instagram</span>';
+  if (labels.includes('youtube'))   return '<span class="plat-yt">YouTube</span>';
+  if (labels.includes('tiktok'))    return '<span class="plat-tt">TikTok</span>';
+  if (labels.includes('twitter'))   return '<span class="plat-tw">Twitter/X</span>';
+  return '<span style="color:var(--muted)">—</span>';
+}
+
+function milestone(issue) {
+  return issue.milestone ? issue.milestone.title : '—';
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+async function initApp() {
+  try {
+    const user = await ghFetch('/user');
+    document.getElementById('auth-user').textContent = `@${user.login}`;
+    document.getElementById('btn-login').style.display = 'none';
+    document.getElementById('btn-logout').style.display = 'inline-block';
+    document.getElementById('login-overlay').style.display = 'none';
+    document.getElementById('main-nav').style.display = 'flex';
+    document.getElementById('tab-novo').classList.add('active');
+    await loadMilestones();
+  } catch(e) {
+    document.getElementById('login-overlay').style.display = 'flex';
+    document.getElementById('main-nav').style.display = 'none';
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  }
+}
+
+initApp();
+</script>
+</body>
+</html>
