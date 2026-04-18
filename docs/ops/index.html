@@ -84,6 +84,17 @@
   .dash-chip:hover { border-color: var(--accent); color: var(--accent); }
   .dash-chip .chip-icon { font-size: 10px; opacity: .5; }
   .dash-chip-none { font-size: 11px; color: var(--muted); padding: 5px 0; }
+
+  .metrics-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 16px; margin-bottom: 12px; }
+  .metrics-card .title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .metrics-card .meta { font-size: 11px; color: var(--muted); margin-bottom: 14px; }
+  .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .metrics-grid input { background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-family: 'Arimo', sans-serif; font-size: 13px; padding: 8px 12px; border-radius: 3px; width: 100%; }
+  .metrics-grid input:focus { outline: none; border-color: #444; }
+  .metrics-grid label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); display: block; margin-bottom: 4px; }
+  .metrics-card .btn-save { background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-family: 'Arimo', sans-serif; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; padding: 8px 20px; border-radius: 3px; cursor: pointer; }
+  .metrics-card .btn-save:hover { border-color: #444; }
+  .metrics-card .btn-save.success { border-color: var(--green); color: var(--green); }
   </style>
 </head>
 <body>
@@ -101,6 +112,7 @@
   <button class="active" onclick="showTab('novo')">Novo deliverable</button>
   <button onclick="showTab('links')">Links</button>
   <button onclick="showTab('nfs')">NFs</button>
+  <button onclick="showTab('metricas')">Métricas</button>
   <button onclick="showTab('digest')">Digest</button>
 </nav>
 
@@ -193,6 +205,12 @@
     <div id="list-nfs" class="issue-list"><p class="loading">Carregando...</p></div>
   </div>
 
+  <!-- TAB: Métricas manuais -->
+  <div class="tab" id="tab-metricas">
+    <h2>Métricas manuais</h2>
+    <div id="list-metricas" class="issue-list"><p class="loading">Carregando...</p></div>
+  </div>
+
   <!-- TAB: Digest -->
   <div class="tab" id="tab-digest">
     <h2>Digest do dia</h2>
@@ -256,6 +274,7 @@ function showTab(name) {
   event.target.classList.add('active');
   if (name === 'links') loadLinks();
   if (name === 'nfs') loadNFs();
+  if (name === 'metricas') loadMetricas();
   if (name === 'digest') loadDigest();
 }
 
@@ -433,6 +452,51 @@ async function salvarNF(num) {
     btn.className = 'success';
     toast(`NF salva na issue #${num}`);
   } catch(err) { toast(`Erro: ${err.message}`, 'err'); btn.textContent = 'Salvar NF'; }
+}
+
+// ── Métricas manuais ──────────────────────────────────────────────────────────
+async function loadMetricas() {
+  const el = document.getElementById('list-metricas');
+  el.innerHTML = '<p class="loading">Carregando...</p>';
+  try {
+    const issues = await ghFetch(`/repos/${REPO}/issues?state=open&labels=metricas-manuais&per_page=100`);
+    if (!issues.length) { el.innerHTML = '<p class="empty">Nenhuma issue aguardando métricas manuais.</p>'; return; }
+    el.innerHTML = issues.map(i => `
+      <div class="metrics-card" id="mcard-${i.number}">
+        <div class="title">#${i.number} — ${i.title}</div>
+        <div class="meta">${platSpan(i)} · ${milestone(i)}</div>
+        <div class="metrics-grid">
+          <div><label>Views</label><input id="mv-${i.number}" type="number" min="0" placeholder="0"></div>
+          <div><label>Likes</label><input id="ml-${i.number}" type="number" min="0" placeholder="0"></div>
+          <div><label>Comentários</label><input id="mc-${i.number}" type="number" min="0" placeholder="0"></div>
+          <div><label>Compartilhamentos</label><input id="ms-${i.number}" type="number" min="0" placeholder="0"></div>
+        </div>
+        <button class="btn-save" onclick="salvarMetricas(${i.number})" id="btn-m-${i.number}">Salvar métricas</button>
+      </div>`).join('');
+  } catch(err) { el.innerHTML = `<p class="empty">Erro: ${err.message}</p>`; }
+}
+
+async function salvarMetricas(num) {
+  const views    = parseInt(document.getElementById(`mv-${num}`).value) || 0;
+  const likes    = parseInt(document.getElementById(`ml-${num}`).value) || 0;
+  const comments = parseInt(document.getElementById(`mc-${num}`).value) || 0;
+  const shares   = parseInt(document.getElementById(`ms-${num}`).value) || 0;
+  const btn = document.getElementById(`btn-m-${num}`);
+  btn.textContent = 'Salvando...';
+
+  const total = likes + comments + shares;
+  const er = views > 0 ? ((total / views) * 100).toFixed(2) + '%*' : '—';
+  const now = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  const body = `### Métricas coletadas automaticamente — ${now}\n\n| | |\n|---|---|\n| Views | ${views.toLocaleString('pt-BR')} |\n| Likes | ${likes.toLocaleString('pt-BR')} |\n| Comentários | ${comments.toLocaleString('pt-BR')} |\n| Compartilhamentos | ${shares.toLocaleString('pt-BR')} |\n| Engagement Rate | ${er} |\n| Content topic | — |\n\n_Inserido manualmente via painel ops._`;
+
+  try {
+    await ghFetch(`/repos/${REPO}/issues/${num}/comments`, { method: 'POST', body: JSON.stringify({ body }) });
+    await ghFetch(`/repos/${REPO}/issues/${num}/labels/metricas-manuais`, { method: 'DELETE' }).catch(() => {});
+    btn.textContent = '✓ Salvo';
+    btn.className = 'btn-save success';
+    toast(`Métricas salvas na issue #${num}`);
+    setTimeout(() => document.getElementById(`mcard-${num}`)?.remove(), 1200);
+  } catch(err) { toast(`Erro: ${err.message}`, 'err'); btn.textContent = 'Salvar métricas'; }
 }
 
 // ── Digest ────────────────────────────────────────────────────────────────────
